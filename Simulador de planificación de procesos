@@ -1,0 +1,80 @@
+import time
+from collections import deque
+
+class Proceso:
+    def __init__(self, nombre, tiempo_irrupcion, prioridad, tamaño_datos):
+        self.nombre = nombre
+        self.tiempo_irrupcion = tiempo_irrupcion
+        self.tiempo_restante = tiempo_irrupcion
+        self.prioridad = prioridad
+        self.tamaño_datos = tamaño_datos
+        self.estado = "Nuevo"
+
+    def cambiar_estado(self, nuevo_estado):
+        self.estado = nuevo_estado
+        print(f"{self.nombre} -> Estado: {self.estado}")
+
+
+# ==============================
+# ALGORITMO ROUND ROBIN
+# ==============================
+def round_robin(procesos, quantum):
+    print("\n--- Simulación Round Robin ---\n")
+    cola = deque(procesos)
+
+    while cola:
+        proceso = cola.popleft()
+
+        if proceso.estado == "Nuevo":
+            proceso.cambiar_estado("Listo")
+
+        proceso.cambiar_estado("En ejecución")
+
+        if proceso.tiempo_restante > quantum:
+            proceso.tiempo_restante -= quantum
+            print(f"{proceso.nombre} ejecuta {quantum} unidades")
+            proceso.cambiar_estado("Bloqueado")
+            proceso.cambiar_estado("Listo")
+            cola.append(proceso)
+        else:
+            print(f"{proceso.nombre} ejecuta {proceso.tiempo_restante} unidades")
+            proceso.tiempo_restante = 0
+            proceso.cambiar_estado("Terminado")
+
+        time.sleep(1)
+
+
+# ==============================
+# ALGORITMO POR PRIORIDAD
+# ==============================
+def prioridad(procesos):
+    print("\n--- Simulación por Prioridad ---\n")
+    procesos_ordenados = sorted(procesos, key=lambda x: x.prioridad)
+
+    for proceso in procesos_ordenados:
+        proceso.cambiar_estado("Listo")
+        proceso.cambiar_estado("En ejecución")
+        print(f"{proceso.nombre} ejecuta {proceso.tiempo_irrupcion} unidades")
+        proceso.cambiar_estado("Terminado")
+        time.sleep(1)
+
+
+# ==============================
+# PROCESOS SIGET
+# ==============================
+
+p1 = Proceso("P1 - Trafico rutinario", 6, 3, 500)
+p2 = Proceso("P2 - Accidente vial", 4, 1, 200)
+p3 = Proceso("P3 - Reporte estadistico", 8, 2, 700)
+
+procesos = [p1, p2, p3]
+
+round_robin(procesos.copy(), quantum=2)
+
+p1 = Proceso("P1 - Trafico rutinario", 6, 3, 500)
+p2 = Proceso("P2 - Accidente vial", 4, 1, 200)
+p3 = Proceso("P3 - Reporte estadistico", 8, 2, 700)
+
+procesos = [p1, p2, p3]
+
+prioridad(procesos)
